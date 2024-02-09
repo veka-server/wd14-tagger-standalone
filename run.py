@@ -1,10 +1,9 @@
-
-
 import sys
 from tagger.interrogator import Interrogator, WaifuDiffusionInterrogator
 from PIL import Image
 from pathlib import Path
 import argparse
+import requests
 
 from tagger.interrogators import interrogators
 
@@ -31,7 +30,7 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-# 使用するinterrogatorを読み出す
+# charger le model
 interrogator = interrogators[args.model]
 
 def image_interrogate(image_path: Path):
@@ -42,22 +41,17 @@ def image_interrogate(image_path: Path):
     result = interrogator.interrogate(im)
     return Interrogator.postprocess_tags(result[1], threshold=args.threshold)
 
-if args.dir:
-    d = Path(args.dir)
-    for f in d.iterdir():
-        if not f.is_file() or f.suffix not in ['.png', '.jpg', '.webp']:
-            continue
-        image_path = Path(f)
-        print('processing:', image_path)
-        tags = image_interrogate(image_path)
-        tags_str = ", ".join(tags.keys())
-        with open(f.parent / f"{f.stem}{args.ext}", "w") as fp:
-            fp.write(tags_str)
+from flask import Flask, jsonify, request
 
-if args.file:
-    tags = image_interrogate(Path(args.file))
-    print()
-    tags_str = ", ".join(tags.keys())
-    print(tags_str)
+app = Flask(__name__)
 
+# SERVER HTTP
+@app.route('/eval', methods=['GET'])
+def get_tasks():
+    file_name = request.values.get("file") 
+    tags = image_interrogate(Path(file_name))
+    return jsonify({'tasks': tags})
 
+if __name__ == '__main__':
+    app.run(debug=True, port=1554)
+    

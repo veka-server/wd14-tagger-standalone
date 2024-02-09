@@ -1,4 +1,5 @@
 import os
+import torch
 import pandas as pd
 import numpy as np
 
@@ -17,7 +18,9 @@ tag_escape_pattern = re.compile(r'([\\()])')
 
 import tagger.dbimutils as dbimutils
 
-use_cpu = True
+use_cpu = False
+
+
 
 class Interrogator:
     @staticmethod
@@ -128,7 +131,7 @@ class WaifuDiffusionInterrogator(Interrogator):
 
         # https://onnxruntime.ai/docs/execution-providers/
         # https://github.com/toriato/stable-diffusion-webui-wd14-tagger/commit/e4ec460122cf674bbf984df30cdb10b4370c1224#r92654958
-        providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+        providers =  ['CUDAExecutionProvider', 'CPUExecutionProvider']
         if use_cpu:
             providers.pop(0)
 
@@ -220,7 +223,7 @@ class MLDanbooruInterrogator(Interrogator):
         model_path, tags_path = self.download()
 
         from onnxruntime import InferenceSession
-        providers = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+        providers =  ['CUDAExecutionProvider', 'CPUExecutionProvider']
         if use_cpu:
             providers.pop(0)
         self.model = InferenceSession(model_path,
